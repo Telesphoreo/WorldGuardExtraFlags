@@ -46,6 +46,12 @@ public class WorldEditFlagHandler extends AbstractDelegateExtent
     }
 
     @Override
+    public boolean setBlock(int x, int y, int z, BlockStateHolder block) throws WorldEditException
+    {
+        return setBlock(BlockVector3.at(x, y, z), block);
+    }
+
+    @Override
     public int setBlocks(Region region, Pattern pattern) throws MaxChangedBlocksException
     {
         for (BlockVector3 position : region.clone())
