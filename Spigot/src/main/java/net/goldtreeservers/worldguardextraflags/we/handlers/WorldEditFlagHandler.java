@@ -1,6 +1,7 @@
 package net.goldtreeservers.worldguardextraflags.we.handlers;
 
 import com.sk89q.worldedit.MaxChangedBlocksException;
+import com.sk89q.worldedit.function.mask.Mask;
 import com.sk89q.worldedit.function.pattern.Pattern;
 import com.sk89q.worldedit.regions.Region;
 import com.sk89q.worldguard.LocalPlayer;
@@ -60,6 +61,20 @@ public class WorldEditFlagHandler extends AbstractDelegateExtent
             if (regions.queryState(this.player, Flags.WORLDEDIT) != State.DENY)
             {
                 return super.setBlocks(region, pattern);
+            }
+        }
+        return 0;
+    }
+
+    @Override
+    public int replaceBlocks(Region region, Mask mask, Pattern pattern) throws MaxChangedBlocksException
+    {
+        for (BlockVector3 position : region.clone())
+        {
+            ApplicableRegionSet regions = this.regionManager.getApplicableRegions(position);
+            if (regions.queryState(this.player, Flags.WORLDEDIT) != State.DENY)
+            {
+                return super.replaceBlocks(region, mask, pattern);
             }
         }
         return 0;
