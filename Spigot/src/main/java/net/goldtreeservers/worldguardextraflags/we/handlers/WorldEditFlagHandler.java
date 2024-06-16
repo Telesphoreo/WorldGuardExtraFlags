@@ -4,6 +4,7 @@ import com.sk89q.worldedit.MaxChangedBlocksException;
 import com.sk89q.worldedit.function.mask.Mask;
 import com.sk89q.worldedit.function.pattern.Pattern;
 import com.sk89q.worldedit.regions.Region;
+import com.sk89q.worldedit.world.block.BaseBlock;
 import com.sk89q.worldguard.LocalPlayer;
 
 import com.sk89q.worldedit.WorldEditException;
@@ -18,6 +19,8 @@ import com.sk89q.worldguard.protection.flags.StateFlag.State;
 import com.sk89q.worldguard.protection.managers.RegionManager;
 import com.sk89q.worldguard.protection.regions.RegionContainer;
 import net.goldtreeservers.worldguardextraflags.flags.Flags;
+
+import java.util.Set;
 
 public class WorldEditFlagHandler extends AbstractDelegateExtent
 {
@@ -75,6 +78,34 @@ public class WorldEditFlagHandler extends AbstractDelegateExtent
             if (regions.queryState(this.player, Flags.WORLDEDIT) != State.DENY)
             {
                 return super.replaceBlocks(region, mask, pattern);
+            }
+        }
+        return 0;
+    }
+
+    @Override
+    public <B extends BlockStateHolder<B>> int replaceBlocks(final Region region, final Set<BaseBlock> filter, final B replacement) throws MaxChangedBlocksException
+    {
+        for (BlockVector3 position : region.clone())
+        {
+            ApplicableRegionSet regions = this.regionManager.getApplicableRegions(position);
+            if (regions.queryState(this.player, Flags.WORLDEDIT) != State.DENY)
+            {
+                return super.replaceBlocks(region, filter, replacement);
+            }
+        }
+        return 0;
+    }
+
+    @Override
+    public int replaceBlocks(final Region region, final Set<BaseBlock> filter, final Pattern pattern) throws MaxChangedBlocksException
+    {
+        for (BlockVector3 position : region.clone())
+        {
+            ApplicableRegionSet regions = this.regionManager.getApplicableRegions(position);
+            if (regions.queryState(this.player, Flags.WORLDEDIT) != State.DENY)
+            {
+                return super.replaceBlocks(region, filter, pattern);
             }
         }
         return 0;
