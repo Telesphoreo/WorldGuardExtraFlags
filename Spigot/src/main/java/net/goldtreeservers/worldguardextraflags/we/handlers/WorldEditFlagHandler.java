@@ -64,6 +64,32 @@ public class WorldEditFlagHandler extends AbstractDelegateExtent
         return 0;
     }
 
+    @Override
+    public <B extends BlockStateHolder<B>> int setBlocks(final Region region, final B block) throws MaxChangedBlocksException {
+        if (hasPermissionInRegion(region))
+        {
+            return super.setBlocks(region, block);
+        }
+        return 0;
+    }
+
+    @Override
+    public int setBlocks(final @NotNull Set<BlockVector3> vset, final Pattern pattern) {
+        boolean hasPermission = true;
+        for (BlockVector3 position : vset) {
+            ApplicableRegionSet regions = this.regionManager.getApplicableRegions(position);
+            if (regions.queryState(this.player, Flags.WORLDEDIT) != State.DENY)
+            {
+                hasPermission = false;
+                break; // No need to check further if one position is allowed
+            }
+        }
+        if (hasPermission) {
+            return super.setBlocks(vset, pattern);
+        }
+        return 0;
+    }
+
     private boolean hasPermissionInRegion(@NotNull Region region) {
         boolean hasPermission = true;
         Region clonedRegion = region.clone();
@@ -73,6 +99,7 @@ public class WorldEditFlagHandler extends AbstractDelegateExtent
             if (regions.queryState(this.player, Flags.WORLDEDIT) == State.DENY)
             {
                 hasPermission = false;
+                break; // No need to check further if one position is allowed
             }
         }
         return hasPermission;
