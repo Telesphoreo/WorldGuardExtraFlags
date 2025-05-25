@@ -11,14 +11,13 @@ import com.sk89q.worldedit.WorldEditException;
 import com.sk89q.worldedit.extent.AbstractDelegateExtent;
 import com.sk89q.worldedit.extent.Extent;
 import com.sk89q.worldedit.math.BlockVector3;
-import com.sk89q.worldedit.world.World;
 import com.sk89q.worldedit.world.block.BlockStateHolder;
 import com.sk89q.worldguard.protection.ApplicableRegionSet;
 import com.sk89q.worldguard.protection.flags.StateFlag.State;
 
 import com.sk89q.worldguard.protection.managers.RegionManager;
-import com.sk89q.worldguard.protection.regions.RegionContainer;
 import net.goldtreeservers.worldguardextraflags.flags.Flags;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Set;
 
@@ -28,7 +27,7 @@ public class WorldEditFlagHandler extends AbstractDelegateExtent
 
     private final RegionManager regionManager;
 
-    public WorldEditFlagHandler(World world, Extent extent, LocalPlayer player, RegionManager regionManager)
+    public WorldEditFlagHandler(Extent extent, LocalPlayer player, RegionManager regionManager)
     {
         super(extent);
 
@@ -56,57 +55,65 @@ public class WorldEditFlagHandler extends AbstractDelegateExtent
     }
 
     @Override
-    public int setBlocks(Region region, Pattern pattern) throws MaxChangedBlocksException
+    public int setBlocks(@NotNull Region region, Pattern pattern) throws MaxChangedBlocksException
     {
-        for (BlockVector3 position : region.clone())
+        if (hasPermissionInRegion(region))
+        {
+            return super.setBlocks(region, pattern);
+        }
+        return 0;
+    }
+
+    private boolean hasPermissionInRegion(@NotNull Region region) {
+        boolean hasPermission = true;
+        Region clonedRegion = region.clone();
+        for (BlockVector3 position : clonedRegion)
         {
             ApplicableRegionSet regions = this.regionManager.getApplicableRegions(position);
-            if (regions.queryState(this.player, Flags.WORLDEDIT) != State.DENY)
+            if (regions.queryState(this.player, Flags.WORLDEDIT) == State.DENY)
             {
-                return super.setBlocks(region, pattern);
+                hasPermission = false;
             }
+        }
+        return hasPermission;
+    }
+
+    @Override
+    public int replaceBlocks(@NotNull Region region, Mask mask, Pattern pattern) throws MaxChangedBlocksException
+    {
+        if (hasPermissionInRegion(region))
+        {
+            return super.replaceBlocks(region, mask, pattern);
         }
         return 0;
     }
 
     @Override
-    public int replaceBlocks(Region region, Mask mask, Pattern pattern) throws MaxChangedBlocksException
+    public <B extends BlockStateHolder<B>> int replaceBlocks(final @NotNull Region region, final Set<BaseBlock> filter, final B replacement) throws MaxChangedBlocksException
     {
-        for (BlockVector3 position : region.clone())
+        if (hasPermissionInRegion(region))
         {
-            ApplicableRegionSet regions = this.regionManager.getApplicableRegions(position);
-            if (regions.queryState(this.player, Flags.WORLDEDIT) != State.DENY)
-            {
-                return super.replaceBlocks(region, mask, pattern);
-            }
+            return super.replaceBlocks(region, filter, replacement);
         }
         return 0;
     }
 
     @Override
-    public <B extends BlockStateHolder<B>> int replaceBlocks(final Region region, final Set<BaseBlock> filter, final B replacement) throws MaxChangedBlocksException
+    public int replaceBlocks(final @NotNull Region region, final Set<BaseBlock> filter, final Pattern pattern) throws MaxChangedBlocksException
     {
-        for (BlockVector3 position : region.clone())
+        boolean hasPermission = true;
+        Region clonedRegion = region.clone();
+        for (BlockVector3 position : clonedRegion)
         {
             ApplicableRegionSet regions = this.regionManager.getApplicableRegions(position);
             if (regions.queryState(this.player, Flags.WORLDEDIT) != State.DENY)
             {
-                return super.replaceBlocks(region, filter, replacement);
+                hasPermission = false;
             }
         }
-        return 0;
-    }
-
-    @Override
-    public int replaceBlocks(final Region region, final Set<BaseBlock> filter, final Pattern pattern) throws MaxChangedBlocksException
-    {
-        for (BlockVector3 position : region.clone())
+        if (hasPermission)
         {
-            ApplicableRegionSet regions = this.regionManager.getApplicableRegions(position);
-            if (regions.queryState(this.player, Flags.WORLDEDIT) != State.DENY)
-            {
-                return super.replaceBlocks(region, filter, pattern);
-            }
+            return super.replaceBlocks(region, filter, pattern);
         }
         return 0;
     }

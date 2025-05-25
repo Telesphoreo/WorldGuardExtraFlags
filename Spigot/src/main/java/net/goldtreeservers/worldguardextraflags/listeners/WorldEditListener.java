@@ -14,6 +14,7 @@ import com.sk89q.worldguard.session.SessionManager;
 import lombok.RequiredArgsConstructor;
 import net.goldtreeservers.worldguardextraflags.we.handlers.WorldEditFlagHandler;
 import org.bukkit.Bukkit;
+import org.jetbrains.annotations.NotNull;
 
 @RequiredArgsConstructor
 public class WorldEditListener
@@ -23,7 +24,7 @@ public class WorldEditListener
 	private final SessionManager sessionManager;
 	
 	@Subscribe(priority = EventHandler.Priority.VERY_EARLY)
-    public void onEditSessionEvent(EditSessionEvent event)
+    public void onEditSessionEvent(@NotNull EditSessionEvent event)
 	{
 		World world = event.getWorld();
 
@@ -41,7 +42,7 @@ public class WorldEditListener
 				return;
 			}
 
-			event.setExtent(new WorldEditFlagHandler(world, event.getExtent(), localPlayer, regionManager));
+			event.setExtent(new WorldEditFlagHandler(event.getExtent(), localPlayer, regionManager));
 		}
 	}
 }
