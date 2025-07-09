@@ -5,14 +5,14 @@
 	<parent>
 		<groupId>net.goldtreeservers</groupId>
 		<artifactId>worldguardextraflags</artifactId>
-		<version>4.2.5-SNAPSHOT</version>
+		<version>4.3.0-FAWE</version>
 	</parent>
 
 	<groupId>net.goldtreeservers.worldguardextraflags</groupId>
 	<artifactId>Spigot</artifactId>
 
 	<build>
-		<finalName>WorldGuardExtraFlags</finalName>
+		<finalName>WorldGuardExtraFlags-${version}</finalName>
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -50,8 +50,8 @@
 
 	<repositories>
 		<repository>
-			<id>spigot-repo</id>
-			<url>https://hub.spigotmc.org/nexus/content/repositories/snapshots/</url>
+			<id>papermc</id>
+			<url>https://repo.papermc.io/repository/maven-public/</url>
 		</repository>
 		<repository>
 			<id>sk89q-repo</id>
@@ -88,9 +88,9 @@
 		</dependency>
 
 		<dependency>
-			<groupId>org.spigotmc</groupId>
-			<artifactId>spigot-api</artifactId>
-			<version>1.20.6-R0.1-SNAPSHOT</version>
+			<groupId>io.papermc.paper</groupId>
+			<artifactId>paper-api</artifactId>
+			<version>1.21.4-R0.1-SNAPSHOT</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
