@@ -49,7 +49,7 @@ public class WorldEditFlagHandler extends AbstractDelegateExtent
     public boolean setBlock(BlockVector3 location, BlockStateHolder block) throws WorldEditException
     {
         ApplicableRegionSet regions = this.regionManager.getApplicableRegions(location);
-        if (player.hasPermission(BYPASS_PERMISSION) || regions.queryState(this.player, Flags.WORLDEDIT) == State.ALLOW)
+        if (player.hasPermission(BYPASS_PERMISSION) || regions.testState(this.player, Flags.WORLDEDIT))
         {
             if (player.hasPermission(DEBUG_PERMISSION)) logger.info("1. Setting block at {} to {}", location, block);
             return super.setBlock(location, block);
@@ -92,7 +92,7 @@ public class WorldEditFlagHandler extends AbstractDelegateExtent
         boolean hasPermission = true;
         for (BlockVector3 position : vset) {
             ApplicableRegionSet regions = this.regionManager.getApplicableRegions(position);
-            if (regions.queryState(this.player, Flags.WORLDEDIT) == State.DENY)
+            if (!regions.testState(this.player, Flags.WORLDEDIT))
             {
                 hasPermission = false;
                 break; // No need to check further if one position is allowed
@@ -115,7 +115,7 @@ public class WorldEditFlagHandler extends AbstractDelegateExtent
         for (BlockVector3 position : clonedRegion)
         {
             ApplicableRegionSet regions = this.regionManager.getApplicableRegions(position);
-            if (regions.queryState(this.player, Flags.WORLDEDIT) == State.DENY)
+            if (regions.testState(this.player, Flags.WORLDEDIT))
             {
                 hasPermission = false;
                 break; // No need to check further if one position is allowed
@@ -156,7 +156,7 @@ public class WorldEditFlagHandler extends AbstractDelegateExtent
         for (BlockVector3 position : clonedRegion)
         {
             ApplicableRegionSet regions = this.regionManager.getApplicableRegions(position);
-            if (regions.queryState(this.player, Flags.WORLDEDIT) == State.DENY)
+            if (regions.testState(this.player, Flags.WORLDEDIT))
             {
                 hasPermission = false;
                 break; // No need to check further if one position is allowed
