@@ -8,6 +8,7 @@ import com.sk89q.worldedit.util.Location;
 import com.sk89q.worldedit.world.World;
 import com.sk89q.worldguard.LocalPlayer;
 import com.sk89q.worldguard.session.handler.Handler;
+import net.goldtreeservers.worldguardextraflags.CommandUtils;
 import org.bukkit.Bukkit;
 
 import com.sk89q.worldguard.protection.ApplicableRegionSet;
@@ -77,7 +78,7 @@ public class CommandOnExitFlagHandler extends Handler
 				{
 					for (String command : commands_)
 					{
-						Bukkit.getServer().dispatchCommand(((BukkitPlayer) player).getPlayer(), command.substring(1).replace("%username%", player.getName())); //TODO: Make this better
+						Bukkit.getServer().dispatchCommand(((BukkitPlayer) player).getPlayer(), CommandUtils.formatCommand(command.substring(1), player));
 					}
 
 					break;
