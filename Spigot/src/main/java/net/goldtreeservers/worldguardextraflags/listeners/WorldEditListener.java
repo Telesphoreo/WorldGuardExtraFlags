@@ -36,7 +36,13 @@ public class WorldEditListener
 
 		if (event.getActor() instanceof Player player)
 		{
-			LocalPlayer localPlayer = this.worldGuardPlugin.wrapPlayer(Bukkit.getPlayer(player.getUniqueId()));
+			org.bukkit.entity.Player bukkitPlayer = Bukkit.getPlayer(player.getUniqueId());
+			if (bukkitPlayer == null)
+			{
+				return;
+			}
+
+			LocalPlayer localPlayer = this.worldGuardPlugin.wrapPlayer(bukkitPlayer);
 			if (this.sessionManager.hasBypass(localPlayer, world))
 			{
 				return;

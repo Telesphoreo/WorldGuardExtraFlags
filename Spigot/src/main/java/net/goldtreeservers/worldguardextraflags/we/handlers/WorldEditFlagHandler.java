@@ -14,7 +14,6 @@ import com.sk89q.worldedit.math.BlockVector3;
 import com.sk89q.worldedit.world.block.BlockStateHolder;
 import com.sk89q.worldguard.bukkit.BukkitPlayer;
 import com.sk89q.worldguard.protection.ApplicableRegionSet;
-import com.sk89q.worldguard.protection.flags.StateFlag.State;
 
 import com.sk89q.worldguard.protection.managers.RegionManager;
 import net.goldtreeservers.worldguardextraflags.flags.Flags;
@@ -31,6 +30,9 @@ public class WorldEditFlagHandler extends AbstractDelegateExtent
     private final LocalPlayer player;
 
     private final RegionManager regionManager;
+
+    private boolean notified;
+
     private static final Logger logger = LoggerFactory.getLogger(WorldEditFlagHandler.class);
     private static final String DEBUG_PERMISSION = "wgef.worldedit.debug";
     private static final String DISABLE_NOTIFY_PERMISSION = "wgef.worldedit.disable_notify";
@@ -69,8 +71,8 @@ public class WorldEditFlagHandler extends AbstractDelegateExtent
     {
         if (hasPermissionInRegion(region))
         {
-            int blocks = super.setBlocks(region, pattern);
-            if (player.hasPermission(DEBUG_PERMISSION)) logger.info("2. Set {} blocks in region {} with pattern {}", blocks, region, pattern);
+            if (player.hasPermission(DEBUG_PERMISSION)) logger.info("2. Setting blocks in region {} with pattern {}", region, pattern);
+            return super.setBlocks(region, pattern);
         }
         sendNoWorldeditAllowedMessage();
         return 0;
@@ -89,39 +91,12 @@ public class WorldEditFlagHandler extends AbstractDelegateExtent
 
     @Override
     public int setBlocks(final @NotNull Set<BlockVector3> vset, final Pattern pattern) {
-        boolean hasPermission = true;
-        for (BlockVector3 position : vset) {
-            ApplicableRegionSet regions = this.regionManager.getApplicableRegions(position);
-            if (!regions.testState(this.player, Flags.WORLDEDIT))
-            {
-                hasPermission = false;
-                break; // No need to check further if one position is allowed
-            }
-        }
-        if (player.hasPermission(BYPASS_PERMISSION) || hasPermission) {
+        if (hasPermissionAt(vset)) {
             if (player.hasPermission(DEBUG_PERMISSION)) logger.info("4. Setting blocks at {} with pattern {}", vset, pattern);
             return super.setBlocks(vset, pattern);
         }
         sendNoWorldeditAllowedMessage();
         return 0;
-    }
-
-    private boolean hasPermissionInRegion(@NotNull Region region) {
-        if (player.hasPermission(BYPASS_PERMISSION)) {
-            return true; // Bypass permission overrides all checks
-        }
-        boolean hasPermission = true;
-        Region clonedRegion = region.clone();
-        for (BlockVector3 position : clonedRegion)
-        {
-            ApplicableRegionSet regions = this.regionManager.getApplicableRegions(position);
-            if (regions.testState(this.player, Flags.WORLDEDIT))
-            {
-                hasPermission = false;
-                break; // No need to check further if one position is allowed
-            }
-        }
-        return hasPermission;
     }
 
     @Override
@@ -151,24 +126,32 @@ public class WorldEditFlagHandler extends AbstractDelegateExtent
     @Override
     public int replaceBlocks(final @NotNull Region region, final Set<BaseBlock> filter, final Pattern pattern) throws MaxChangedBlocksException
     {
-        boolean hasPermission = true;
-        Region clonedRegion = region.clone();
-        for (BlockVector3 position : clonedRegion)
+        if (hasPermissionInRegion(region))
         {
-            ApplicableRegionSet regions = this.regionManager.getApplicableRegions(position);
-            if (regions.testState(this.player, Flags.WORLDEDIT))
-            {
-                hasPermission = false;
-                break; // No need to check further if one position is allowed
-            }
-        }
-        if (player.hasPermission(BYPASS_PERMISSION) || hasPermission)
-        {
-            if (player.hasPermission(DEBUG_PERMISSION)) logger.info("6. Replacing blocks in region {} with filter {} and pattern {}", region, filter, pattern);
+            if (player.hasPermission(DEBUG_PERMISSION)) logger.info("7. Replacing blocks in region {} with filter {} and pattern {}", region, filter, pattern);
             return super.replaceBlocks(region, filter, pattern);
         }
         sendNoWorldeditAllowedMessage();
         return 0;
+    }
+
+    private boolean hasPermissionInRegion(@NotNull Region region) {
+        return hasPermissionAt(region.clone());
+    }
+
+    private boolean hasPermissionAt(@NotNull Iterable<BlockVector3> positions) {
+        if (player.hasPermission(BYPASS_PERMISSION)) {
+            return true; // Bypass permission overrides all checks
+        }
+        for (BlockVector3 position : positions)
+        {
+            ApplicableRegionSet regions = this.regionManager.getApplicableRegions(position);
+            if (!regions.testState(this.player, Flags.WORLDEDIT))
+            {
+                return false; // Deny the whole operation when any position is denied
+            }
+        }
+        return true;
     }
 
     private void sendNoWorldeditAllowedMessage() {
@@ -176,6 +159,12 @@ public class WorldEditFlagHandler extends AbstractDelegateExtent
             Thread.dumpStack();
             logger.info("WorldEdit operation denied due to WorldGuard restrictions (worldedit flag).");
         }
+
+        //Only notify once per edit session, per-block denials would flood the chat otherwise
+        if (this.notified) {
+            return;
+        }
+        this.notified = true;
 
         if (!player.hasPermission(DISABLE_NOTIFY_PERMISSION) && player instanceof BukkitPlayer bp) {
             bp.getPlayer().sendMessage(Component.text("[WGEF (Zoriot)] ", NamedTextColor.GOLD)
