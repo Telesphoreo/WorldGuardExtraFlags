@@ -6,6 +6,7 @@ import com.sk89q.worldguard.LocalPlayer;
 import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
 import com.sk89q.worldguard.protection.regions.RegionContainer;
 import com.sk89q.worldguard.session.SessionManager;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -25,7 +26,8 @@ import org.bukkit.inventory.meta.PotionMeta;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
-import org.spigotmc.event.player.PlayerSpawnLocationEvent;
+
+import io.papermc.paper.event.player.AsyncPlayerSpawnLocationEvent;
 
 import com.sk89q.worldguard.protection.ApplicableRegionSet;
 import com.sk89q.worldguard.protection.flags.StateFlag.State;
@@ -214,10 +216,10 @@ public class PlayerListener implements Listener
 	}
 
 	@EventHandler(priority = EventPriority.HIGHEST)
-	public void onPlayerSpawnLocationEvent(PlayerSpawnLocationEvent event)
+	public void onAsyncPlayerSpawnLocationEvent(AsyncPlayerSpawnLocationEvent event)
 	{
-		Player player = event.getPlayer();
-		LocalPlayer localPlayer = WorldGuardPlugin.inst().wrapPlayer(player);
+		//The player entity does not exist yet, so query the region with an offline wrapper instead
+		LocalPlayer localPlayer = this.worldGuardPlugin.wrapOfflinePlayer(Bukkit.getOfflinePlayer(event.getConnection().getProfile().getId()));
 
 		Location location = this.regionContainer.createQuery().queryValue(BukkitAdapter.adapt(event.getSpawnLocation()), localPlayer, Flags.JOIN_LOCATION);
 		if (location != null)

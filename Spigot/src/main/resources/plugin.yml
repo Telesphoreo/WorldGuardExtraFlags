@@ -8,6 +8,6 @@ author: isokissa3, Zoriot
 website: https://joniaromaa.fi
 
 depend: [ WorldGuard ]
-softdepend: [ ProtocolLib, WorldEdit, FastAsyncWorldEdit ]
+softdepend: [ packetevents, WorldEdit, FastAsyncWorldEdit ]
 
 main: net.goldtreeservers.worldguardextraflags.WorldGuardExtraFlagsPlugin
