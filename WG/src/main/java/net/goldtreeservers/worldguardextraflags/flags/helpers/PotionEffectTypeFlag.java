@@ -1,6 +1,5 @@
 package net.goldtreeservers.worldguardextraflags.flags.helpers;
 
-import org.bukkit.Registry;
 import org.bukkit.potion.PotionEffectType;
 
 import com.sk89q.worldguard.protection.flags.Flag;
@@ -23,12 +22,7 @@ public class PotionEffectTypeFlag extends Flag<PotionEffectType>
 	@Override
 	public PotionEffectType parseInput(FlagContext context) throws InvalidFlagFormat
 	{
-		PotionEffectType potionEffect = Registry.EFFECT.match(context.getUserInput().trim());
-		if (potionEffect == null)
-		{
-			potionEffect = PotionEffectType.getByName(context.getUserInput().trim());
-		}
-
+		PotionEffectType potionEffect = PotionEffectFlag.findPotionEffectType(context.getUserInput().trim());
 		if (potionEffect != null)
 		{
 			return potionEffect;
@@ -40,12 +34,6 @@ public class PotionEffectTypeFlag extends Flag<PotionEffectType>
 	@Override
 	public PotionEffectType unmarshal(Object o)
 	{
-		PotionEffectType potionEffect = Registry.EFFECT.match(o.toString());
-		if (potionEffect == null)
-		{
-			potionEffect = PotionEffectType.getByName(o.toString());
-		}
-
-		return potionEffect;
+		return PotionEffectFlag.findPotionEffectType(o.toString());
 	}
 }

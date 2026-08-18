@@ -1,5 +1,8 @@
 package net.goldtreeservers.worldguardextraflags.flags.helpers;
 
+import java.util.Locale;
+
+import org.bukkit.NamespacedKey;
 import org.bukkit.Registry;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
@@ -36,12 +39,7 @@ public class PotionEffectFlag extends Flag<PotionEffect>
 			throw new InvalidFlagFormat("Please use the following format: <effect name> [effect amplifier] [show particles]");
 		}
 
-		PotionEffectType potionEffect = Registry.EFFECT.match(split[0]);
-		if (potionEffect == null)
-		{
-			potionEffect = PotionEffectType.getByName(split[0]);
-		}
-
+		PotionEffectType potionEffect = PotionEffectFlag.findPotionEffectType(split[0]);
 		if (potionEffect == null)
 		{
 			throw new InvalidFlagFormat("Unable to find the potion effect type! Input valid namespaced ids.");
@@ -58,14 +56,26 @@ public class PotionEffectFlag extends Flag<PotionEffect>
 		return this.buildPotionEffect(split);
 	}
 	
+	static PotionEffectType findPotionEffectType(String input)
+	{
+		NamespacedKey key = NamespacedKey.fromString(input.toLowerCase(Locale.ROOT).replace(' ', '_'));
+		if (key != null)
+		{
+			PotionEffectType potionEffect = Registry.EFFECT.get(key);
+			if (potionEffect != null)
+			{
+				return potionEffect;
+			}
+		}
+
+		//Fall back to the legacy name lookup for values saved by older versions
+		return PotionEffectType.getByName(input);
+	}
+
 	private PotionEffect buildPotionEffect(String[] split)
 	{
-		PotionEffectType potionEffect = Registry.EFFECT.match(split[0]);
-		if (potionEffect == null)
-		{
-			potionEffect = PotionEffectType.getByName(split[0]);
-		}
-		
+		PotionEffectType potionEffect = PotionEffectFlag.findPotionEffectType(split[0]);
+
 		int amplifier = 0;
 		if (split.length >= 2)
 		{
