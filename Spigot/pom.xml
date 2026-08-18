@@ -42,6 +42,19 @@
 								<exclude>**/*.DSA</exclude>
 							</excludes>
 						</filter>
+						<!-- Keep only the project jar's manifest in the shaded jar -->
+						<filter>
+							<artifact>org.bstats:*</artifact>
+							<excludes>
+								<exclude>META-INF/MANIFEST.MF</exclude>
+							</excludes>
+						</filter>
+						<filter>
+							<artifact>net.goldtreeservers.worldguardextraflags:wg</artifact>
+							<excludes>
+								<exclude>META-INF/MANIFEST.MF</exclude>
+							</excludes>
+						</filter>
 					</filters>
 				</configuration>
 			</plugin>

@@ -181,9 +181,9 @@ public class WorldGuardExtraFlagsPlugin extends JavaPlugin
 				BlockVector3 min = region.getMinimumPoint();
 				BlockVector3 max = region.getMaximumPoint();
 
-				for(int x = min.getBlockX() >> 4; x <= max.getBlockX() >> 4; x++)
+				for(int x = min.x() >> 4; x <= max.x() >> 4; x++)
 				{
-					for(int z = min.getBlockZ() >> 4; z <= max.getBlockZ() >> 4; z++)
+					for(int z = min.z() >> 4; z <= max.z() >> 4; z++)
 					{
 						world.getChunkAt(x, z).addPluginChunkTicket(this);
 					}
