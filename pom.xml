@@ -4,7 +4,7 @@
    <groupId>net.goldtreeservers</groupId>
    <artifactId>worldguardextraflags</artifactId>
    <name>WorldGuardExtraFlags</name>
-   <version>4.2.5-SNAPSHOT</version>
+   <version>4.3.1-FAWE-SNAPSHOT</version>
    
    <packaging>pom</packaging>
    
@@ -17,6 +17,13 @@
             <configuration>
                <source>21</source>
                <target>21</target>
+               <annotationProcessorPaths>
+                  <path>
+                     <groupId>org.projectlombok</groupId>
+                     <artifactId>lombok</artifactId>
+                     <version>1.18.42</version>
+                  </path>
+               </annotationProcessorPaths>
             </configuration>
          </plugin>
       </plugins>
@@ -26,7 +33,7 @@
       <dependency>
          <groupId>org.projectlombok</groupId>
          <artifactId>lombok</artifactId>
-         <version>1.18.32</version>
+         <version>1.18.42</version>
          <scope>provided</scope>
       </dependency>
    </dependencies>

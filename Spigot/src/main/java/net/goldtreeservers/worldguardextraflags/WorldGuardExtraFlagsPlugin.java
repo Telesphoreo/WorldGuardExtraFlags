@@ -18,6 +18,7 @@ import com.sk89q.worldguard.session.SessionManager;
 import net.goldtreeservers.worldguardextraflags.listeners.*;
 import net.goldtreeservers.worldguardextraflags.wg.handlers.*;
 import org.bstats.bukkit.Metrics;
+import org.bstats.charts.AdvancedPie;
 import org.bukkit.World;
 import org.bukkit.plugin.Plugin;
 
@@ -27,7 +28,7 @@ import com.sk89q.worldguard.protection.flags.Flag;
 
 import lombok.Getter;
 import net.goldtreeservers.worldguardextraflags.flags.Flags;
-import net.goldtreeservers.worldguardextraflags.protocollib.ProtocolLibHelper;
+import net.goldtreeservers.worldguardextraflags.packetevents.PacketEventsHelper;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class WorldGuardExtraFlagsPlugin extends JavaPlugin
@@ -43,7 +44,7 @@ public class WorldGuardExtraFlagsPlugin extends JavaPlugin
 	@Getter private RegionContainer regionContainer;
 	@Getter private SessionManager sessionManager;
 
-	@Getter private ProtocolLibHelper protocolLibHelper;
+	@Getter private PacketEventsHelper packetEventsHelper;
 	
 	public WorldGuardExtraFlagsPlugin()
 	{
@@ -98,10 +99,10 @@ public class WorldGuardExtraFlagsPlugin extends JavaPlugin
 		
 		try
 		{
-			Plugin protocolLibPlugin = this.getServer().getPluginManager().getPlugin("ProtocolLib");
-			if (protocolLibPlugin != null)
+			Plugin packetEventsPlugin = this.getServer().getPluginManager().getPlugin("packetevents");
+			if (packetEventsPlugin != null)
 			{
-				this.protocolLibHelper = new ProtocolLibHelper(this, protocolLibPlugin);
+				this.packetEventsHelper = new PacketEventsHelper(this, packetEventsPlugin);
 			}
 		}
 		catch(Throwable ignore)
@@ -139,11 +140,11 @@ public class WorldGuardExtraFlagsPlugin extends JavaPlugin
 
 		this.worldEditPlugin.getWorldEdit().getEventBus().register(new WorldEditListener(this.worldGuardPlugin, this.regionContainer, this.sessionManager));
 		
-		if (this.protocolLibHelper != null)
+		if (this.packetEventsHelper != null)
 		{
 			try
 			{
-				this.protocolLibHelper.onEnable();
+				this.packetEventsHelper.onEnable();
 			}
 			catch (Throwable ignore)
 			{
@@ -196,7 +197,7 @@ public class WorldGuardExtraFlagsPlugin extends JavaPlugin
 		final int bStatsPluginId = 7301;
 		
         Metrics metrics = new Metrics(this, bStatsPluginId);
-        metrics.addCustomChart(new Metrics.AdvancedPie("flags_used", () ->
+        metrics.addCustomChart(new AdvancedPie("flags_used", () ->
 		{
 			Map<Flag<?>, Boolean> valueMap = WorldGuardExtraFlagsPlugin.FLAGS.stream().collect(Collectors.toMap(v -> v, v -> false));
 
