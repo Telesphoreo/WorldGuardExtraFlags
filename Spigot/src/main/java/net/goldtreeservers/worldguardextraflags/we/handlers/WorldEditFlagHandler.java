@@ -14,6 +14,11 @@ import com.sk89q.worldedit.math.BlockVector3;
 import com.sk89q.worldedit.world.block.BlockStateHolder;
 import com.sk89q.worldguard.bukkit.BukkitPlayer;
 import com.sk89q.worldguard.protection.ApplicableRegionSet;
+import com.sk89q.worldguard.protection.flags.RegionGroup;
+import com.sk89q.worldguard.protection.flags.RegionGroupFlag;
+import com.sk89q.worldguard.protection.flags.StateFlag.State;
+import com.sk89q.worldguard.protection.regions.ProtectedCuboidRegion;
+import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 
 import com.sk89q.worldguard.protection.managers.RegionManager;
 import net.goldtreeservers.worldguardextraflags.flags.Flags;
@@ -136,22 +141,75 @@ public class WorldEditFlagHandler extends AbstractDelegateExtent
     }
 
     private boolean hasPermissionInRegion(@NotNull Region region) {
-        return hasPermissionAt(region.clone());
+        return hasPermissionInArea(region.getMinimumPoint(), region.getMaximumPoint());
     }
 
-    private boolean hasPermissionAt(@NotNull Iterable<BlockVector3> positions) {
+    private boolean hasPermissionAt(@NotNull Set<BlockVector3> positions) {
+        if (positions.isEmpty()) {
+            return true;
+        }
+
+        BlockVector3 min = null;
+        BlockVector3 max = null;
+        for (BlockVector3 position : positions)
+        {
+            min = min == null ? position : min.getMinimum(position);
+            max = max == null ? position : max.getMaximum(position);
+        }
+
+        return hasPermissionInArea(min, max);
+    }
+
+    //Queries the spatial index for regions that intersect the operation's bounding
+    //box instead of testing every position, so the cost scales with the number of
+    //intersecting regions and not with the operation's volume. The trade-off: a
+    //deny region that intersects the bounding box denies the whole operation, even
+    //when the denied volume is outside the actual edit or a higher priority region
+    //allows part of it.
+    private boolean hasPermissionInArea(BlockVector3 min, BlockVector3 max) {
         if (player.hasPermission(BYPASS_PERMISSION)) {
             return true; // Bypass permission overrides all checks
         }
-        for (BlockVector3 position : positions)
+
+        ProtectedRegion globalRegion = this.regionManager.getRegion("__global__");
+        if (globalRegion != null && this.regionDenies(globalRegion)) {
+            return false;
+        }
+
+        ApplicableRegionSet intersecting = this.regionManager.getApplicableRegions(new ProtectedCuboidRegion("wgef-operation-area", true, min, max));
+        for (ProtectedRegion region : intersecting)
         {
-            ApplicableRegionSet regions = this.regionManager.getApplicableRegions(position);
-            if (!regions.testState(this.player, Flags.WORLDEDIT))
-            {
-                return false; // Deny the whole operation when any position is denied
+            if (this.regionDenies(region)) {
+                return false;
             }
         }
+
         return true;
+    }
+
+    private boolean regionDenies(ProtectedRegion region) {
+        ProtectedRegion current = region;
+        State state = null;
+        while (current != null)
+        {
+            state = current.getFlag(Flags.WORLDEDIT);
+            if (state != null) {
+                break;
+            }
+            current = current.getParent();
+        }
+
+        if (state != State.DENY) {
+            return false;
+        }
+
+        RegionGroup group = current.getFlag(Flags.WORLDEDIT.getRegionGroupFlag());
+        if (group == null) {
+            group = Flags.WORLDEDIT.getRegionGroupFlag().getDefault();
+        }
+
+        //The deny only applies to the player when they fall inside the flag's region group
+        return group == null || RegionGroupFlag.isMember(region, group, this.player);
     }
 
     private void sendNoWorldeditAllowedMessage() {
