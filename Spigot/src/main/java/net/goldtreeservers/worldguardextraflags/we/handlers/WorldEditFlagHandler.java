@@ -225,7 +225,7 @@ public class WorldEditFlagHandler extends AbstractDelegateExtent
         this.notified = true;
 
         if (!player.hasPermission(DISABLE_NOTIFY_PERMISSION) && player instanceof BukkitPlayer bp) {
-            bp.getPlayer().sendMessage(Component.text("[WGEF (Zoriot)] ", NamedTextColor.GOLD)
+            bp.getPlayer().sendMessage(Component.text("[WGEF] ", NamedTextColor.GOLD)
                     .append(Component.text("You are not allowed to perform WorldEdit operations in this region (worldedit flag).", NamedTextColor.DARK_RED)));
         }
     }

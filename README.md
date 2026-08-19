@@ -1,9 +1,6 @@
-# WorldGuard ExtraFlags - WGEFF
+# WorldGuard ExtraFlags (WGEF)
 
-A Fork with readded the FAWE support and some other changes.
-The original plugin is [aromaa/WorldGuardExtraFlags](https://github.com/aromaa/WorldGuardExtraFlags), Telesphoreo made the initial changes for that fork. 
-
-A Paper plugin extension that provides extra flags for [WorldGuard](https://github.com/EngineHub/WorldGuard).
+WGEF is a Paper plugin extension that provides extra flags for [WorldGuard](https://github.com/EngineHub/WorldGuard), including support for FastAsyncWorldEdit (FAWE).
 
 ## About
 WorldGuard allows protecting areas of land by the creation of regions which then can be customized further by applying special flags. WorldGuard provides an API that 3th party plugins can use to provide their own flags.
@@ -102,4 +99,4 @@ If you are using Essentials you can fix this by changing the respawn-listener-pr
 https://github.com/CyberdyneCC/Thermos/issues/498#issuecomment-247083549
 
 ## More
-Downloads are provided on the [Releases](https://github.com/Zoriot/WorldGuardExtraFlags/releases) page of this repository.
+Downloads are provided on this repository's [Releases](../../releases) page.
